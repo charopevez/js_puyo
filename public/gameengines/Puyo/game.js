@@ -72,7 +72,7 @@ function loop() {
             case 4:
                 //プヨ削除
                 console.log("stage " + i + " erasing");
-                if (Board.renderPuyoErase(frame, i)) {
+                if (RenderEngine.renderPuyoErase(frame, i)) {
                     //// 消し終わったら、再度落ちるかどうか判定する(第一状態に戻る)
                     phase[i] = 1;
                 }

@@ -8,7 +8,7 @@ class Score {
     // スコアを表示
     static showScore() {
         let score = this.score;
-        Board.renderScore(score);
+        RenderEngine.renderScore(score);
         // var plScore1 = Board.plScore1;
         // var plScore2 = Board.plScore2;
         // plScore1 = plScore1.getContext("2d");

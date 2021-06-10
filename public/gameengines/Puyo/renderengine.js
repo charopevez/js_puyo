@@ -99,12 +99,11 @@ class RenderEngine {
     static renderEvents(gField, defaultField = 0) {
         var startXY = Settings.fieldPlace;
         for (let i = gField * 2; i < gField * 2 + 2; i++) {
-            var puyoImg = Board.fallingPuyo[i];
+            var puyoImg = Board.fallingObj[i];
             let ctx = this.getContext();
             var color = Settings.puyoType[puyoImg.object];
-            console.dir("puyo " + puyoImg.object);
             ctx.fillStyle = color;
-            ctx.fillRect(startXY[gField][0] + 2 * Settings.cellSize,
+            ctx.fillRect(startXY[gField][0] + puyoImg.column * Settings.cellSize,
                 startXY[gField][1] + puyoImg.row * Settings.cellSize,
                 Settings.cellSize,
                 Settings.cellSize);

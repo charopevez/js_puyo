@@ -59,6 +59,7 @@ function loop() {
             case 3:
                 // 消せるかどうか判定する
                 const isErased = Board.isPuyoErased(frame, i);
+                console.log(isErased);
                 console.log("stage " + i + " erase check");
                 if ( isErased ){
                     //消せたの場合

@@ -1,17 +1,10 @@
 import React from 'react'
-import GameField from './GameField'
-import GameSettings from './GameSettings'
 import PropTypes from 'prop-types'
 import "../styles/gamescreen.scss"
 
 
 const GameScreen = (props) => {
     return (
-        // <div className="gameScreen">
-        //     <GameField/>
-        //     <GameSettings />
-        //     {props.className!==1 && <GameField class={props.className}/>}
-        // </div>
         <div id="game"></div>
     )
 }

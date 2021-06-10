@@ -5,7 +5,7 @@ class Settings{
         this.mode=2;
         this.rows=12; // ステージの縦の個数
         this.columns=6; // ステージの横の個数
-        this.freeFallingSpeed=60;  // 自由落下のスピード
+        this.freeFallSpeed=16;  // 自由落下のスピード
         this.eraseCount = 4; // 何個以上揃ったら消えるか
         this.cellSize=40; //プヨのサイズ
         this.maxType=6;　//プヨの種類

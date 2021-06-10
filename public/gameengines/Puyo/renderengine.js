@@ -56,13 +56,10 @@ class RenderEngine {
     * @param gField ゲームステージ番号
     */
     static renderFrame(gField, defaultField = 0) {
-        console.log(gField || defaultField + "  field");
         this.renderGameField();
         //render ステージ
         this.renderStatic(0);
         this.renderStatic(1);
-        this.renderEvents(0);
-        this.renderEvents(1);
 
 
     }

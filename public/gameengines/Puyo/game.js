@@ -41,7 +41,7 @@ function loop() {
             case 1:
                 //プヨが転落かどうか判定する
                 console.log("stage " + i + " falling check");
-                if (Board.isPuyoFalling(i)) {
+                if (Board.isObjFalling(i)) {
                     //転落状態の場合は転落を確認して次のステップに進む(第二状態に進む)
                     phase[i] = 2;
                 } else {
@@ -51,7 +51,7 @@ function loop() {
                 break;
             case 2:
                 //プヨ移動して、転落したまで状態
-                if (Board.isPuyoFallen(frame, i)) {
+                if (Board.isObjFell(i)) {
                     // すべて落ちきったら、ぷよを消せるかどうか判定する
                     phase[i] = 3;
                 }

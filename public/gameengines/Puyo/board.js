@@ -31,15 +31,15 @@ class Board {
                 [0, 0, 0, 0, 0, 0],
                 [0, 0, 0, 0, 0, 0],
                 [0, 0, 0, 0, 0, 0],
-                [0, 1, 3, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0],
+                [0, 2, 0, 0, 0, 0],
+                [0, 2, 0, 0, 0, 0],
                 [0, 2, 3, 0, 0, 0],
-                [0, 1, 3, 0, 0, 0],
-                [0, 5, 3, 0, 0, 0],
-                [0, 3, 1, 0, 0, 0],
+                [0, 3, 3, 0, 0, 0],
             ]
         ];
-        this.objCount=0;
-        this.fallingObj = [];
+        this.objCount = 0;
+        this.fallingObjList = [];
         this.erasingObjData = [];
 
     }
@@ -64,10 +64,9 @@ class Board {
     /**
      * @param gField ゲームステージ番号
      */
-    static isPuyoFalling(gField) {
-        var isFalling = false;
-        let puyoCell = 0;
-        //const field = JSON.parse(JSON.stringify(this.board[gField]));
+    static isObjFalling(gField) {
+        let isFalling = false;
+        this.fallingObjList.length = 0;
         //gField検索
         for (let i = Settings.rows - 2; i >= 0; i--) {
             //行検査
@@ -87,25 +86,22 @@ class Board {
                         dstCell++;
                     }
                     // 最終目的地に置く
-                    let id=2 * gField + puyoCell;
-                    console.log("id " + id);
-                    this.board[gField][dstCell][y] = -1-id;
+                    this.board[gField][dstCell][y] = cell;
                     // 落ちるリストに入れる
-                    this.fallingUpdate(id, {
+                    this.fallingObjList.push({
                         object: cell,
                         row: i,
-                        column: y,
                         destinationRow: dstCell,
                         falling: true
                     });
-                    puyoCell++;
+                    console.log(this.fallingObjList)
                     //落ちるものがあったことを記録しておく
                     isFalling = true;
                 }
             }
 
         }
-        console.log(this.fallingObj);
+        console.log(this.fallingObjList);
         return isFalling;
 
     }
@@ -113,26 +109,28 @@ class Board {
     /**
     * @param gField ゲームステージ番号
     */
-    static isPuyoFallen(frame, gField) {
-        if (frame % Settings.freeFallingSpeed == 0) {
-            console.log("stage " + gField + " fall confirmation");
-            var isFallen = true;
-            for (var i = 2 * gField; i < 2 * gField + 2; i++) {
-                if (this.fallingObj[i].falling) {
-                    var currentRaw = this.fallingObj[i].row;
-                    currentRaw++;
-                    this.fallingObj[i].row = currentRaw;
-                    if (this.fallingObj[i].row >= this.fallingObj[i].destinationRow) {
-                        this.fallingObj[i].row = this.fallingObj[i].destinationRow;
-                        this.fallingObj[i].falling = false;
-                    }
-                    isFallen = false;
-                }
+    static isObjFell(gField) {
+        let isFalling = true;
+        for (const obj of this.fallingObjList) {
+            if (!obj.falling) {
+                // すでに自由落下が終わっている
+                continue;
             }
-            RenderEngine.renderFrame(gField);
-            return isFallen;
+            let position = obj.row;
+            position += Settings.freeFallingSpeed;
+            if (position >= obj.destinationRow) {
+                // 自由落下終了
+                position = obj.destinationRow;
+                obj.falling = false;
+            } else {
+                // まだ落下しているぷよがあることを記録する
+                isFalling = true;
+            }
+            // 新しい位置を保存する
+            obj.row = position;
         }
-        return false;
+        RenderEngine.renderFrame(gField);
+        return isFalling;
     }
 
     /**
@@ -150,18 +148,19 @@ class Board {
         // 隣接ぷよを確認する関数内関数を作成
         const connectedObjData = [];
         const existingObjData = [];
-        console.log("erasing obg check" + gField+ " field");
+        console.log("erasing obg check" + gField + " field");
         console.log(this.board[gField])
         const checkConnectedObj = (i, y, gField) => {
             // ぷよがあるか確認する
-            const boardData = this.board[gField][y][i]<0 ?this.fallingObj[-1-this.board[gField][y][i]].object : this.board[gField][y][i];
-            if (boardData==0) {
+            const boardData = this.board[gField][y][i];
+            if (boardData == 0) {
                 // ないなら何もしない
+                console.log("empty")
                 return;
             }
-            console.log("researched value"+boardData);
+            console.log("researched value" + boardData);
             // あるなら一旦退避して、メモリ上から消す
-            const obj = this.board[gField][y][i]<0 ?this.fallingObj[-1-this.board[gField][y][i]].object : this.board[gField][y][i];
+            const obj = this.board[gField][y][i];
             connectedObjData.push({
                 i: i,
                 y: y,
@@ -169,20 +168,20 @@ class Board {
             });
             this.board[gField][y][i] = 0;
 
-
             // 四方向の周囲ぷよを確認する
             const direction = [[0, 1], [1, 0], [0, -1], [-1, 0]];
             for (let dir = 0; dir < direction.length; dir++) {
-                console.log("checkin dir "+direction[dir])
+                console.log("checkin dir " + direction[dir])
                 const dirX = i + direction[dir][0];
                 const dirY = y + direction[dir][1];
                 if (dirX < 0 || dirY < 0 || dirX >= Settings.columns || dirY >= Settings.rows) {
                     // ステージの外にはみ出た
                     continue;
                 }
-                //if  value in sell less then 0 then take data from falling block
-                const cell = this.board[gField][y][i]<0 ?this.fallingObj[-1-this.board[gField][y][i]].object : this.board[gField][y][i];
-                if (!cell || cell !== boardData) {
+                //if  value in sell less then 0 then
+                const cell = this.board[gField][dirY][dirX];
+                console.log(cell+" ? "+boardData)
+                if (cell !== boardData) {
                     console.log("didnt mathc")
                     // ぷよの色が違う
                     continue;
@@ -212,7 +211,8 @@ class Board {
                 }
             }
         }
-
+        console.log("board")
+        console.log(this.board[gField])
         this.objCount -= this.erasingObjData.length;
         console.log(existingObjData);
         // 消さないリストに入っていたぷよをメモリに復帰させる
@@ -273,12 +273,4 @@ class Board {
     }
 
     //#endregion
-
-    static fallingUpdate(id, objects) {
-        this.fallingObj[id] = objects;
-    }
-
-    static getCellValue(gField,y,i){
-        return this.board[gField][y][i]<0 ?this.fallingObj[-1-this.board[gField][y][i]].object : this.board[gField][y][i];
-    }
 }

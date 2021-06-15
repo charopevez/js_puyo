@@ -8,14 +8,19 @@ window.addEventListener("load", () => {
 
 let phase; // ゲームの現在の状況
 let frame; // ゲームの現在フレーム（1/60秒ごとに1追加される）
+let combinationCount = [0, 0];
 
 function initialize() {
     //ゲームを設定する
     Settings.initialize();
     // ステージを準備する
     Board.initialize();
+    //オブジェクトファクトリーの準備をする
+    Puyo.initialize();
     // ユーザー操作の準備をする
     Player.initialize();
+    //CGI操作の準備をする
+    RenderEngine.initialize();
     // スコア表示の準備をする
     Score.initialize();
     // ゲーム状態を初期化
@@ -59,21 +64,28 @@ function loop() {
             case 3:
                 // 消せるかどうか判定する
                 const isErased = Board.isPuyoErased(frame, i);
-                console.log(isErased);
                 console.log("stage " + i + " erase check");
-                if ( isErased ){
+                if (isErased) {
                     //消せたの場合
                     phase[i] = 4;
+                    combinationCount[i]++; 
+                    // 得点を計算する
+                    //Score.calculateScore(combinationCount, eraseInfo.piece, eraseInfo.color);
+
                 } else {
                     /// 消せなかったら、新しいぷよを登場させる
+                    if(Board.objCount[i] === 0 && combinationCount[i] > 0) {
+                        // 全消しの処理をする
+                        //Score.addScore(i,3600);
+                        }
+                    combinationCount[i] = 0;
                     phase[i] = 10;
                 }
                 break;
-                
+
             case 4:
                 //プヨ削除
-                console.log("stage " + i + " erasing");
-                if (RenderEngine.renderPuyoErase(frame, i)) {
+                if (RenderEngine.renderErase(frame, i)) {
                     //// 消し終わったら、再度落ちるかどうか判定する(第一状態に戻る)
                     phase[i] = 1;
                 }
@@ -108,10 +120,10 @@ function loop() {
             case 20:
                 // プレイヤーが操作する
                 const action = [0, 0];
-                console.log("stage " + i + " checking user actions");
-                action[i]= Board.actionOnField(i);
+                action[i] = Board.actionOnField(i, frame);
                 //操作判定
                 phase[i] = action[i];
+                break;
             case 21:
                 //プヨを移動
                 console.log("stage " + i + " user moving puyo");
@@ -130,9 +142,11 @@ function loop() {
                 break;
             case 23:
                 //// 現在の位置でぷよを固定する
-                Board.fix(i);
+                Board.fix(i, frame);
+                // 画像を作成し配置する
+                RenderEngine.renderStatic(i)
                 // 現在のぷよをステージ上に配置して、まず自由落下を確認する(第二状態に戻る)
-                phase[i] = 2;
+                phase[i] = 1;
                 break;
             // #endregion
 
@@ -145,8 +159,8 @@ function loop() {
         }
     }
     frame++;
-    if (frame%60==0) console.log(frame/60+"second");
-    if(phase[1]!=-1) {
-    requestAnimationFrame(loop); // 1/60秒後にもう一度呼び出す
+    if (frame % 60 == 0) console.log(frame / 60 + "second");
+    if (phase[1] != -1) {
+        requestAnimationFrame(loop); // 1/60秒後にもう一度呼び出す
     }
 }

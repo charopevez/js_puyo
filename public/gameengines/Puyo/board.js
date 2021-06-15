@@ -15,13 +15,13 @@ class Board {
                 [0, 0, 0, 0, 0, 0],
                 [0, 0, 0, 0, 0, 0],
                 [0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 6, 6, 0],
+                [0, 2, 0, 5, 0, 0],
+                [0, 0, 2, 0, 5, 6],
+                [0, 1, 0, 2, 4, 0],
                 [0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 5],
+                [2, 2, 2, 4, 4, 4],
             ],
             [
                 [0, 2, 3, 0, 0, 0],
@@ -32,32 +32,44 @@ class Board {
                 [0, 0, 0, 0, 0, 0],
                 [0, 0, 0, 0, 0, 0],
                 [0, 0, 0, 0, 0, 0],
-                [0, 2, 0, 0, 0, 0],
-                [0, 2, 0, 0, 0, 0],
-                [0, 2, 3, 0, 0, 0],
-                [0, 3, 3, 0, 0, 0],
+                [0, 2, 0, 0, 2, 0],
+                [0, 2, 0, 3, 0, 0],
+                [0, 2, 3, 0, 0, 6],
+                [0, 3, 3, 0, 0, 6],
             ]
         ];
-        this.objCount = 0;
+        this.objCount = [0, 0];
         this.fallingObjList = [];
-        this.erasingObjData = [];
+        this.erasingObjData0 = [];
+        this.erasingObjData1 = [];
 
     }
     //#region 状態functions
 
     /**
-     * @param gField ゲームステージ番号
-     */
-    //次ぷよを作成し
-    static generatePuyo(gField) {
-        this.nextPuyou = Puyo.generatePuyo;
+    * @param gField ゲームステージ番号
+    * @param startingFrame 現在ゲームフレーム番号
+    */
+    // 画面とメモリ両方に puyo をセットする
+    static fixObj(x,y, type, gField) {
+        // メモリにセットする
+        this.board[gField][y][x] = type;
+        console.log(this.board[gField])
     }
 
     /**
     * @param gField ゲームステージ番号
     */
-    // ぷよ配置する
+    //次ぷよを作成し
     static nextPuyo(gField) {
+        if (gField < 1) {
+            console.log("player")
+            return Player.nextObj();
+        } else {
+            console.log("opponent")
+            return true;
+            return Settings.mode < 3 ? Bot.nextObj() : Human.nextObj();
+        }
 
     }
 
@@ -94,14 +106,12 @@ class Board {
                         destinationRow: dstCell,
                         falling: true
                     });
-                    console.log(this.fallingObjList)
                     //落ちるものがあったことを記録しておく
                     isFalling = true;
                 }
             }
 
         }
-        console.log(this.fallingObjList);
         return isFalling;
 
     }
@@ -138,27 +148,22 @@ class Board {
     * @param startingFrame アニメーションための現在のフレーム番号 
     */
     static isPuyoErased(startingFrame, gField) {
-        console.log("frame " + startingFrame + " field " + gField);
         //変数を宣言と初期化
         this.eraseStartingFrame = startingFrame;
-        this.erasingObjData.length = 0;
+        this.clearErasingObjData(gField)
 
         // 何色のぷよを消したかを記録する
         const erasingObj = {};
         // 隣接ぷよを確認する関数内関数を作成
         const connectedObjData = [];
         const existingObjData = [];
-        console.log("erasing obg check" + gField + " field");
-        console.log(this.board[gField])
         const checkConnectedObj = (i, y, gField) => {
             // ぷよがあるか確認する
             const boardData = this.board[gField][y][i];
             if (boardData == 0) {
                 // ないなら何もしない
-                console.log("empty")
                 return;
             }
-            console.log("researched value" + boardData);
             // あるなら一旦退避して、メモリ上から消す
             const obj = this.board[gField][y][i];
             connectedObjData.push({
@@ -171,7 +176,6 @@ class Board {
             // 四方向の周囲ぷよを確認する
             const direction = [[0, 1], [1, 0], [0, -1], [-1, 0]];
             for (let dir = 0; dir < direction.length; dir++) {
-                console.log("checkin dir " + direction[dir])
                 const dirX = i + direction[dir][0];
                 const dirY = y + direction[dir][1];
                 if (dirX < 0 || dirY < 0 || dirX >= Settings.columns || dirY >= Settings.rows) {
@@ -180,9 +184,7 @@ class Board {
                 }
                 //if  value in sell less then 0 then
                 const cell = this.board[gField][dirY][dirX];
-                console.log(cell+" ? "+boardData)
                 if (cell !== boardData) {
-                    console.log("didnt mathc")
                     // ぷよの色が違う
                     continue;
                 }
@@ -197,7 +199,6 @@ class Board {
                 connectedObjData.length = 0;
                 const obj = this.board[gField][y][x];
                 checkConnectedObj(x, y, gField);
-                console.log(connectedObjData)
                 if (connectedObjData.length == 0 || connectedObjData.length < Settings.eraseCount) {
                     // 連続して並んでいる数が足りなかったので消さない
                     if (connectedObjData.length) {
@@ -206,23 +207,35 @@ class Board {
                     }
                 } else {
                     // これらは消して良いので消すリストに追加する
-                    this.erasingObjData.push(...connectedObjData);
+                    if (gField == 0) {
+                        this.erasingObjData0.push(...connectedObjData);
+                    } else {
+                        this.erasingObjData1.push(...connectedObjData);
+                    }
                     erasingObj[obj] = true;
                 }
             }
         }
-        console.log("board")
-        console.log(this.board[gField])
-        this.objCount -= this.erasingObjData.length;
-        console.log(existingObjData);
+        if (gField == 0) {
+            this.objCount[gField] -= this.erasingObjData0.length;
+        } else {
+            this.objCount[gField] -= this.erasingObjData1.length;
+        }
         // 消さないリストに入っていたぷよをメモリに復帰させる
         for (const info of existingObjData) {
             this.board[gField][info.y][info.i] = info.object;
         }
-        if (this.erasingObjData.length) {
+        if (this.erasingObjData0.length) {
             // もし消せるならば、消えるぷよの個数と色の情報をまとめて返す
             return {
-                piece: this.erasingObjData.length,
+                piece: this.erasingObjData0.length,
+                color: Object.keys(erasingObj).length
+            };
+        }
+        if (this.erasingObjData1.length) {
+            // もし消せるならば、消えるぷよの個数と色の情報をまとめて返す
+            return {
+                piece: this.erasingObjData1.length,
                 color: Object.keys(erasingObj).length
             };
         }
@@ -238,10 +251,16 @@ class Board {
     }
 
     /**
-    * @param gField ゲームステージ番号 
+    * @param gField ゲームステージ番号
+    * @param cFrame 現在ゲームフレーム番号
     */
-    static actionOnField(gField) {
-        return true;
+    static actionOnField(gField, cFrame) {
+        if (gField < 1) {
+            return Player.actionOnField(cFrame);
+        } else {
+            //return true;
+            return Settings.mode < 3 ? Bot.actionOnField(cFrame) : Human.actionOnField(cFrame);
+        }
     }
 
     /**
@@ -258,19 +277,36 @@ class Board {
     }
     /**
     * @param gField ゲームステージ番号
+    * @param cFrame 現在ゲームフレーム番号
     */
-    static fix(gField) {
-        return true;
+    static fix(gField, cFrame) {
+        if (gField < 1) {
+            return Player.fix(cFrame, 0);
+        } else {
+            return true;
+           return Settings.mode < 3 ? Bot.fix(cFrame, 1) : Human.fix(cFrame, 1);
+        }
     }
 
 
     //#endregion
 
-    //#region アニメーション関数
-
-    static erase(frame) {
-        return true;
+    /**
+    * @param gField ゲームステージ番号
+    */
+    static getErasingData(gField) {
+        if (gField == 0) {
+            return this.erasingObjData0;
+        } else {
+            return this.erasingObjData1;
+        }
     }
 
-    //#endregion
+    static clearErasingObjData(gField) {
+        if (gField == 0) {
+            this.erasingObjData0.length = 0;
+        } else {
+            this.erasingObjData1.length = 0;
+        }
+    }
 }

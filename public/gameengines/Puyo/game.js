@@ -19,6 +19,8 @@ function initialize() {
     Puyo.initialize();
     // ユーザー操作の準備をする
     Player.initialize();
+    //相手操作の準備をする
+    Settings.mode < 3 ? Bot.initialize() : Human.initialize();
     //CGI操作の準備をする
     RenderEngine.initialize();
     // スコア表示の準備をする
@@ -127,7 +129,7 @@ function loop() {
             case 21:
                 //プヨを移動
                 console.log("stage " + i + " user moving puyo");
-                if (Board.isMoving(i)) {
+                if (Board.isMoving(i, frame)) {
                     //プヨ移動して、プレイヤーが操作ステップに戻る
                     phase[i] = 20;
                 }
@@ -135,7 +137,7 @@ function loop() {
             case 22:
                 //プヨを曲がって、プレイヤーが操作ステップに戻る
                 console.log("stage " + i + " user rotating puyo");
-                if (Board.isRotating(i)) {
+                if (Board.isRotating(i,frame)) {
                     //プヨ移動して、プレイヤーが操作ステップに戻る
                     phase[i] = 20;
                 }
@@ -159,7 +161,6 @@ function loop() {
         }
     }
     frame++;
-    if (frame % 60 == 0) console.log(frame / 60 + "second");
     if (phase[1] != -1) {
         requestAnimationFrame(loop); // 1/60秒後にもう一度呼び出す
     }

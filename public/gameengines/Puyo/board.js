@@ -258,21 +258,35 @@ class Board {
         if (gField < 1) {
             return Player.actionOnField(cFrame);
         } else {
-            //return true;
+            return true;
             return Settings.mode < 3 ? Bot.actionOnField(cFrame) : Human.actionOnField(cFrame);
         }
     }
 
     /**
     * @param gField ゲームステージ番号
+    * @param cFrame 現在ゲームフレーム番号
+    * 
     */
-    static isMoving(gField) {
-        return true;
+    static isMoving(gField, cFrame) {
+        if (gField < 1) {
+            return Player.isMoving(cFrame);
+        } else {
+            return true;
+            return Settings.mode < 3 ? Bot.isMoving(cFrame) : Human.isMoving(cFrame);
+        }
     }
     /**
     * @param gField ゲームステージ番号
+    * @param cFrame 現在ゲームフレーム番号
     */
-    static isRotating(gField) {
+    static isRotating(gField, cFrame) {
+        if (gField < 1) {
+            return Player.isRotating(cFrame);
+        } else {
+            return true;
+            return Settings.mode < 3 ? Bot.isRotating(cFrame) : Human.isRotating(cFrame);
+        }
         return true;
     }
     /**

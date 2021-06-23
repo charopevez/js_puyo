@@ -3,8 +3,8 @@ class RenderEngine {
     static initialize() {
         this.drawnObjList = [];
         this.hint=[];
-        //Gui.refreshGameScreen();
-        this.renderGameField()
+        this.animationsheet = new Image();
+        this.objectSheet = new Image();
     }
 
     /**
@@ -13,22 +13,20 @@ class RenderEngine {
     static renderGameField(gField, defaultField = 0) {
         //render GUI
         var ctx = this.getContext();
-        ctx.fillStyle = Settings.fieldStyle;
-        for (var i = gField || defaultField; i < Settings.fieldPlace.length; i++) {
-            var obj = Settings.fieldPlace[i];
-            ctx.fillRect(obj[0], obj[1], obj[2], obj[3]);
+        for (var i = gField || defaultField; i < (Settings.mode <2 ? 1:2); i++) {
+            var field = Gui.guiList[i+3];
+            console.log(field)
+            ctx.clearRect(field.x, field.y, field.width, field.height);
         };
-        // //render GUI
-        //Gui.refreshGameScreen();
+        //render GUI
+        
+
+
+
     }
 
     static renderScore(score) {
-        for (var i = 0; i < Settings.scorePlace.length; i++) {
-            // render Score frame
-            var ctx = this.getContext();
-            ctx.fillStyle = Settings.scoreStyle;
-            var obj = Settings.scorePlace[i]
-            ctx.fillRect(obj[0], obj[1], obj[2], obj[3]);
+        for (var i = 0; i < score.length; i++) {
             // render score value
             ctx = this.getContext();
             ctx.fillStyle = Settings.fontColor;
@@ -41,11 +39,6 @@ class RenderEngine {
     static renderHint(player) {
         let ctx = this.getContext();
         let hField;
-        ctx.fillStyle = Settings.hintStyle;
-        for (var i = 0; i < Settings.hintPlace.length; i++) {
-            var hintField = Settings.hintPlace[i]
-            ctx.fillRect(hintField[0], hintField[1],hintField[2], hintField[3]);
-        };
         switch (player) {
             case 0:
                 this.hint = Player.nextObjList;
@@ -62,16 +55,16 @@ class RenderEngine {
         }
 
         if (this.hint !== undefined) {
-            let hintField = Settings.hintPlace[hField];
+            let hintField = Gui.guiList[hField+9];
             for (var n = 0; n < this.hint.length; n++) {
                 //真ん中の
                 ctx = this.getContext();
                 ctx.fillStyle = Settings.puyoType[this.hint[n].objRotatable];
-                ctx.fillRect(hintField[0]+Settings.cellSize*(2*n+1)/2, hintField[1]+Settings.cellSize*(n*5+1)/2, Settings.cellSize , Settings.cellSize);
+                ctx.fillRect(hintField.x+Settings.cellSize*(2*n+1)/2, hintField.y+Settings.cellSize*(n*5+1)/2, Settings.cellSize , Settings.cellSize);
                 //回転の
                 ctx = this.getContext();
                 ctx.fillStyle = Settings.puyoType[this.hint[n].objCenter];
-                ctx.fillRect(hintField[0]+Settings.cellSize*(2*n+1)/2, hintField[1]+Settings.cellSize*(n*5+3)/2, Settings.cellSize, Settings.cellSize)
+                ctx.fillRect(hintField.x+Settings.cellSize*(2*n+1)/2, hintField.y+Settings.cellSize*(n*5+3)/2, Settings.cellSize, Settings.cellSize)
             };
         }
         
@@ -92,8 +85,8 @@ class RenderEngine {
     /**
     * @param gField ゲームステージ番号
     */
-    static renderStatic(gField, defaultField = 0) {
-        let startXY = Settings.fieldPlace;
+    static renderStatic(gField) {
+        let startXY = Gui.guiList[gField+3];
         for (let i = 0; i < Settings.rows; i++) {
             for (let y = 0; y < Settings.columns; y++) {
                 let plField = Board.board[gField];
@@ -102,8 +95,8 @@ class RenderEngine {
                     let color = Settings.puyoType[plField[i][y]];
 
                     ctx.fillStyle = color;
-                    ctx.fillRect(startXY[gField][0] + y * Settings.cellSize,
-                        startXY[gField][1] + i * Settings.cellSize,
+                    ctx.fillRect(startXY.x + y * Settings.cellSize,
+                        startXY.y + i * Settings.cellSize,
                         Settings.cellSize,
                         Settings.cellSize);
                 } else {
@@ -151,7 +144,7 @@ class RenderEngine {
                 field = 1;
                 break;
         }
-        let startXY = Settings.fieldPlace[field];
+        let startXY = Gui.guiList[field+3];
         //clear prev obj
         for (let y = field*Settings.maxSize; y < Settings.maxSize+field*Settings.maxSize; y++) {
             if (this.drawnObjList[y]===undefined||this.drawnObjList[y]==null) {
@@ -159,7 +152,7 @@ class RenderEngine {
             }
             let ctx = this.getContext();
             ctx.fillStyle = Settings.fieldStyle;
-            ctx.fillRect(
+            ctx.clearRect(
                 this.drawnObjList[y].x,
                 this.drawnObjList[y].y,
                 Settings.cellSize,
@@ -181,14 +174,14 @@ class RenderEngine {
                 ctx.fillStyle = Settings.puyoType[obj.rotate];
             }
             ctx.fillRect(
-                startXY[0] + (x) * Settings.cellSize,
-                startXY[1] + (y) * Settings.cellSize,
+                startXY.x + (x) * Settings.cellSize,
+                startXY.y + (y) * Settings.cellSize,
                 Settings.cellSize,
                 Settings.cellSize
             );
             this.drawnObjList[i + player * Settings.maxSize] = {
-                y: startXY[1] + (y) * Settings.cellSize,
-                x: startXY[0] + (x) * Settings.cellSize
+                y: startXY.y + (y) * Settings.cellSize,
+                x: startXY.x + (x) * Settings.cellSize
             }
 
         }
@@ -210,20 +203,19 @@ class RenderEngine {
         }
         const elapsedFrame = frame - Board.eraseStartingFrame;
         const ratio = elapsedFrame / 60;
-        var startXY = Settings.fieldPlace;
+        var startXY = Gui.guiList[gField+3];;
         if (ratio <= 1) {
             for (const data of Board.getErasingData(gField)) {
                 let ctx = this.getContext();
-                ctx.fillStyle = Settings.fieldStyle;
-                ctx.fillRect(startXY[gField][0] + (data.i) * Settings.cellSize,
-                    startXY[gField][1] + (data.y) * Settings.cellSize,
+                ctx.clearRect(startXY.x + (data.i) * Settings.cellSize,
+                    startXY.y + (data.y) * Settings.cellSize,
                     Settings.cellSize * (1),
                     Settings.cellSize * (1));
                 ctx = this.getContext();
                 let color = Settings.puyoType[data.object];
-                ctx.fillStyle = color;
-                ctx.fillRect(startXY[gField][0] + (data.i + ratio / 2) * Settings.cellSize,
-                    startXY[gField][1] + (data.y + ratio / 2) * Settings.cellSize,
+                ctx.fillStyle = color;  
+                ctx.fillRect(startXY.x + (data.i + ratio / 2) * Settings.cellSize,
+                    startXY.y + (data.y + ratio / 2) * Settings.cellSize,
                     Settings.cellSize * (1 - ratio),
                     Settings.cellSize * (1 - ratio));
             }
@@ -270,7 +262,7 @@ class RenderEngine {
     //#endregion
 
     static getContext() {
-        return document.getElementById('gameScreen').getContext("2d");
+        return document.getElementById('gameLayer').getContext("2d");
     }
 }
 

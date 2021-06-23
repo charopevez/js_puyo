@@ -2,33 +2,24 @@ class RenderEngine {
 
     static initialize() {
         this.drawnObjList = [];
+        this.hint=[];
+        //Gui.refreshGameScreen();
+        this.renderGameField()
     }
-
-    //#region 表示
-    static createGameScreen(width, height) {
-        this.ratio = Math.ceil(window.devicePixelRatio);
-        const canvas = document.createElement('canvas');
-        canvas.id = "gameScreen";
-        canvas.width = width * this.ratio;
-        canvas.height = height * this.ratio;
-        canvas.style.width = `${width}px`;
-        canvas.style.height = `${height}px`;
-        canvas.getContext('2d').setTransform(this.ratio, 0, 0, this.ratio, 0, 0);
-        return canvas;
-    }
-
 
     /**
     * @param gField ゲームステージ番号
     */
     static renderGameField(gField, defaultField = 0) {
-        //render 背景
+        //render GUI
         var ctx = this.getContext();
         ctx.fillStyle = Settings.fieldStyle;
         for (var i = gField || defaultField; i < Settings.fieldPlace.length; i++) {
             var obj = Settings.fieldPlace[i];
             ctx.fillRect(obj[0], obj[1], obj[2], obj[3]);
         };
+        // //render GUI
+        //Gui.refreshGameScreen();
     }
 
     static renderScore(score) {
@@ -42,18 +33,48 @@ class RenderEngine {
             ctx = this.getContext();
             ctx.fillStyle = Settings.fontColor;
             ctx.font = "normal " + 36 * this.ratio + "px Verdana";
-            ctx.fillText(score[i], obj[0] + 40, obj[1] + 40);
+            ctx.fillText(score[i], obj[0] + Settings.cellSize, obj[1] + Settings.cellSize);
         };
 
     }
 
-    static renderHint() {
-        var ctx = document.getElementById('gameScreen').getContext("2d");
+    static renderHint(player) {
+        let ctx = this.getContext();
+        let hField;
         ctx.fillStyle = Settings.hintStyle;
         for (var i = 0; i < Settings.hintPlace.length; i++) {
-            var obj = Settings.hintPlace[i]
-            ctx.fillRect(obj[0], obj[1], obj[2], obj[3]);
+            var hintField = Settings.hintPlace[i]
+            ctx.fillRect(hintField[0], hintField[1],hintField[2], hintField[3]);
         };
+        switch (player) {
+            case 0:
+                this.hint = Player.nextObjList;
+                hField =0;
+                break;
+            case 1:
+                this.hint = Player.nextObjList;
+                hField = 1;  
+                break;
+            case 3:
+                this.hint = Player.nextObjList;
+                hField = 1;
+                break;
+        }
+
+        if (this.hint !== undefined) {
+            let hintField = Settings.hintPlace[hField];
+            for (var n = 0; n < this.hint.length; n++) {
+                //真ん中の
+                ctx = this.getContext();
+                ctx.fillStyle = Settings.puyoType[this.hint[n].objRotatable];
+                ctx.fillRect(hintField[0]+Settings.cellSize*(2*n+1)/2, hintField[1]+Settings.cellSize*(n*5+1)/2, Settings.cellSize , Settings.cellSize);
+                //回転の
+                ctx = this.getContext();
+                ctx.fillStyle = Settings.puyoType[this.hint[n].objCenter];
+                ctx.fillRect(hintField[0]+Settings.cellSize*(2*n+1)/2, hintField[1]+Settings.cellSize*(n*5+3)/2, Settings.cellSize, Settings.cellSize)
+            };
+        }
+        
     }
 
 
@@ -183,6 +204,10 @@ class RenderEngine {
         //this.renderGameField
         //render existing/
         //render animation
+        //全消し状態なら何もしない
+        if (Board.objCount[gField]==0) {
+            return true;
+        }
         const elapsedFrame = frame - Board.eraseStartingFrame;
         const ratio = elapsedFrame / 60;
         var startXY = Settings.fieldPlace;
@@ -202,10 +227,8 @@ class RenderEngine {
                     Settings.cellSize * (1 - ratio),
                     Settings.cellSize * (1 - ratio));
             }
-
             return false;
         } else {
-            console.log("end animation")
             return true;
         }
     }
@@ -222,10 +245,25 @@ class RenderEngine {
 
     /**
     * @param gField ゲームステージ番号
-    * @param frame アニメーションための現在のフレーム番号 
+    * @param currentFrame アニメーションための現在のフレーム番号 
     */
 
-    static renderResult(frame, gField) {
+    static renderResult( currentFrame, gField) {
+        var startXY = Settings.fieldPlace;
+        //背景再表示
+        this.renderGameField(gField);
+        //ゲーム結果を表示
+        let ctx = this.getContext();
+        ctx.fillStyle = "black";
+        ctx.fillRect(startXY[gField][0] + Settings.cellSize,
+            startXY[gField][1] + Settings.cellSize,
+            Settings.cellSize*4,
+            Settings.cellSize*4);
+        //スコアを表示
+        ctx = this.getContext();
+        ctx.fillStyle = "white";
+        ctx.font = "normal " + 36 * this.ratio + "px Verdana";
+        ctx.fillText("your score"+ Score.score[gField], startXY[gField][0] + Settings.cellSize, startXY[gField][0] + Settings.cellSize);
         return true;
     }
 

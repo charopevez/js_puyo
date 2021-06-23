@@ -59,7 +59,10 @@ class Player {
                     e.preventDefault(); return false;
             }
         });
+        this.nextObjList = [];
     }
+
+
 
     //#region functions
     static nextObj() {
@@ -68,12 +71,17 @@ class Player {
             // 空白でない場合は新しいぷよを置けない
             return false;
         }
-        // 次のオブジェクトを作成
-        this.currentObj = Puyo.nextObj();
+        // 次のオブジェクトリストを作成
+        while (this.nextObjList.length < 3) {
+            this.nextObjList.push(Puyo.nextObj(this.player));
+        }
+        this.currentObj = this.nextObjList.shift();
+        //次のオブジェクトを表示する
+        RenderEngine.renderHint(this.player)
         // オブジェクトの初期配置を定める
         this.objStatus = {
             column: 2, // 中心ぷよの位置: 左から2列目
-            row: -1, // 画面上部ギリギリから出てくる
+            row: 1, // 画面上部ギリギリから出てくる
             center: this.currentObj.objCenter,
             rotate: this.currentObj.objRotatable,
             dcol: 0, // 動くオブジェクトの相対位置: 動くオブジェクトは上方向にある
@@ -87,17 +95,32 @@ class Player {
         return true;
     }
 
+    //ポインターのポジションを検索
+    static getMousePos(canvas, e) {
+        var place = canvas.getBoundingClientRect();
+        return {
+            x: e.clientX - place.left,
+            y: e.clientY - place.top
+        };
+    }
+    //四角の中で行われたか
+    static isInsideRect(position, place) {
+        return position.x > place.x &&
+            position.x < place.x + place.width &&
+            position.y < place.y + place.height &&
+            position.y > place.y
+    }
+
+
     static actionOnField(startingFrame) {
         // まず自由落下を確認する
         // 下キーが押されていた場合、それ込みで自由落下させる
         if (this.falling(this.keyStatus.fall, startingFrame)) {
             // 落下が終わっていたら、ぷよを固定する
             RenderEngine.renderObj(this.player);
-            console.log("object fell")
             return 23;
         }
         RenderEngine.renderObj(this.player);
-
         if (this.keyStatus.right || this.keyStatus.left) {
             // 左右の確認をする
             const step = (this.keyStatus.right) ? 1 : -1;
@@ -136,14 +159,11 @@ class Player {
             let canRotate = true;
             let stepX = 0;　//周り為真ん中のオブジェクト移動
             let stepY = 0;　//周り為真ん中のオブジェクト移動
-            console.log("centerX" + centerX)
-            console.log("centerY" + centerY)
-            console.log("orientation" + rotation)
             switch (rotation) {
                 case 0:
                     // 左から上に回せる
                     if (true) {
-                        console.log("check rotation 0->90")
+
                     }
                     break;
 
@@ -160,7 +180,6 @@ class Player {
                             //真ん中オブジェクト左に移動
                             stepX = -1;
                         }
-                        console.log("check rotation 90->180")
                     }
                     break;
                 case 180:
@@ -169,23 +188,21 @@ class Player {
                         (centerY >= 0 && Board.board[this.player][centerY][centerX + 1] != 0)//真ん中のオブジェクトと右のセールをチェック
                     ) {
                         stepY = -1;
-                        console.log("check rotation 90->180")
                     }
                     break;
                 case 270:
-                    if (centerX -1 < 0 || //右壁をチェック
-                        (centerY >= 0 && Board.board[this.player][centerY][centerX -1] != 0)//真ん中のオブジェクトと右のセールをチェック
+                    if (centerX - 1 < 0 || //右壁をチェック
+                        (centerY >= 0 && Board.board[this.player][centerY][centerX - 1] != 0)//真ん中のオブジェクトと右のセールをチェック
                     ) {
                         if (centerX + 1 >= Settings.columns || //右壁をチェック
                             (centerY >= 0 && Board.board[this.player][centerY][centerX + 1] != 0)
-                         ) {
+                        ) {
                             //真ん中オブジェクト左に壁かオブジェクトある場合回転無効
                             canRotate = false;
                         } else {
                             //真ん中オブジェクト左に移動
                             stepX = 1;
                         }
-                        console.log("check rotation 90->180")
                     }
                     break;
 
@@ -196,18 +213,12 @@ class Player {
             if (canRotate) {
                 // 動かすことが出来るので、移動先情報をセットして移動状態にする
                 this.actionStartFrame = startingFrame;
-                console.log(this.objStatus)
-                console.log("rotation accured")
                 this.objStatus.orientation = (this.objStatus.orientation + 90) % 360;
                 const newCoord = this.directions[this.objStatus.orientation / 90];
-                console.log(this.objStatus.orientation / 90 + "id")
-                console.log("newCoord")
-                console.log(newCoord)
                 this.objStatus.column += stepX;
                 this.objStatus.row += stepY;
                 this.objStatus.dcol = newCoord[1];
                 this.objStatus.drow = newCoord[0];
-                console.log(this.objStatus)
                 return 22;
             }
         }
@@ -221,14 +232,17 @@ class Player {
         let y = this.objStatus.row;
         let dx = this.objStatus.dcol;
         let dy = this.objStatus.drow;
+
         //落ちたかどうか確認
         if (y + 1 >= Settings.rows //床に落ちた
             || Board.board[this.player][y + 1][x] //下の行に何かあるか
             || (y + dy + 1 >= 0 && (y + dy + 1 >= Settings.rows || Board.board[this.player][y + dy + 1][x + dx]))) //オブジェクトは下方向
         {
-            console.log("blocked")
             isBlocked = true;
-            return true;
+            if (2 * curentFrame % Settings.freeFallSpeed == 0) {
+
+                return true;
+            }
         }
 
         if (!isBlocked) {
@@ -279,14 +293,18 @@ class Player {
     static isMoving(cFrame) {
         // 移動中も自然落下はさせる
         this.falling(false, cFrame);
-        return true;
+        if (cFrame - this.actionStartFrame < Settings.movementSpeed) {
+            return false
+        } else {
+            return true;
+        }
     }
     static isRotating(cFrame) {
 
         RenderEngine.renderObj(this.player)
         // 移動中も自然落下はさせる
         this.falling(false, cFrame);
-        if (cFrame - this.actionStartFrame < 5) {
+        if (cFrame - this.actionStartFrame < Settings.movementSpeed) {
             return false
         } else {
             return true;

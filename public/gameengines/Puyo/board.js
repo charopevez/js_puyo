@@ -1,43 +1,21 @@
 class Board {
     static initialize() {
-        const GameScreen = document.getElementById('game');
-        var canvas = RenderEngine.createGameScreen(Settings.screenWidth, Settings.screenHeight);
-        GameScreen.appendChild(canvas);
         RenderEngine.renderGameField();
         RenderEngine.renderHint();
 
 
-        // メモリを準備する
+        //メモリを準備する 
         this.board = [
-            [
-                [0, 0, 4, 0, 0, 0],
-                [0, 0, 2, 0, 0, 0],
-                [0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 6, 6, 0],
-                [0, 2, 0, 5, 0, 0],
-                [0, 0, 2, 0, 5, 6],
-                [0, 1, 0, 2, 4, 0],
-                [0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0, 5],
-                [2, 2, 2, 4, 4, 4],
-            ],
-            [
-                [0, 2, 3, 0, 0, 0],
-                [0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0, 0],
-                [0, 2, 0, 0, 2, 0],
-                [0, 2, 0, 3, 0, 0],
-                [0, 2, 3, 0, 0, 6],
-                [0, 3, 3, 0, 0, 6],
-            ]
+            Array.from(Array(Settings.rows), () => new Array(Settings.columns)),
+            Array.from(Array(Settings.rows), () => new Array(Settings.columns))
         ];
+        for (var i=0; i<2; i++){
+            for (var y=0; y<Settings.rows; y++){
+                for (var z=0; z<Settings.columns; z++){
+                    this.board[i][y][z]=0;
+                }
+            }
+        }
         this.objCount = [0, 0];
         this.fallingObjList = [];
         this.erasingObjData0 = [];
@@ -51,10 +29,9 @@ class Board {
     * @param startingFrame 現在ゲームフレーム番号
     */
     // 画面とメモリ両方に puyo をセットする
-    static fixObj(x,y, type, gField) {
+    static fixObj(x, y, type, gField) {
         // メモリにセットする
         this.board[gField][y][x] = type;
-        console.log(this.board[gField])
     }
 
     /**
@@ -147,7 +124,9 @@ class Board {
     * @param gField ゲームステージ番号
     * @param startingFrame アニメーションための現在のフレーム番号 
     */
-    static isPuyoErased(startingFrame, gField) {
+    static isObjErased(startingFrame, gField) {
+        //オブジェクトがないなら何もし無し
+        if (this.objCount[gField]==0) return null;
         //変数を宣言と初期化
         this.eraseStartingFrame = startingFrame;
         this.clearErasingObjData(gField)
@@ -199,6 +178,7 @@ class Board {
                 connectedObjData.length = 0;
                 const obj = this.board[gField][y][x];
                 checkConnectedObj(x, y, gField);
+
                 if (connectedObjData.length == 0 || connectedObjData.length < Settings.eraseCount) {
                     // 連続して並んでいる数が足りなかったので消さない
                     if (connectedObjData.length) {
@@ -216,6 +196,7 @@ class Board {
                 }
             }
         }
+
         if (gField == 0) {
             this.objCount[gField] -= this.erasingObjData0.length;
         } else {
@@ -229,7 +210,7 @@ class Board {
             // もし消せるならば、消えるぷよの個数と色の情報をまとめて返す
             return {
                 piece: this.erasingObjData0.length,
-                color: Object.keys(erasingObj).length
+                obj: Object.keys(erasingObj).length
             };
         }
         if (this.erasingObjData1.length) {
@@ -244,9 +225,10 @@ class Board {
 
     /**
      * @param gField ゲームステージ番号
-     * @param frame アニメーションための現在のフレーム番号 
+     * @param startingFrame アニメーションためのスタートのフレーム番号 
      */
-    static generateResult(frame, gField) {
+    static generateResult(startingFrame, gField) {
+        this.animationStartFrame=startingFrame;
         return true;
     }
 
@@ -298,7 +280,7 @@ class Board {
             return Player.fix(cFrame, 0);
         } else {
             return true;
-           return Settings.mode < 3 ? Bot.fix(cFrame, 1) : Human.fix(cFrame, 1);
+            return Settings.mode < 3 ? Bot.fix(cFrame, 1) : Human.fix(cFrame, 1);
         }
     }
 

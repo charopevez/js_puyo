@@ -8,7 +8,9 @@ class Score {
     // スコアを表示
     static showScore() {
         let score = this.score;
-        //RenderEngine.renderScore(score);
+        console.log("show score")
+        RenderEngine.renderScore(score[0], Gui.guiList[12]);
+        RenderEngine.renderScore(score[1], Gui.guiList[13]);
 
     }
 

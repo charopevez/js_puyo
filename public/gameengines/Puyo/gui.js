@@ -99,7 +99,7 @@ class Gui {
                 x: 9 * Settings.cellSize,
                 y: 2 * Settings.cellSize,
                 width: 3 * Settings.cellSize,
-                height: 6 * Settings.cellSize,
+                height: 5.5 * Settings.cellSize,
                 mapX: 330,
                 mapY: 215,
                 mapWidth: 39,
@@ -138,7 +138,7 @@ class Gui {
                 x: 9 * Settings.cellSize,
                 y: 2 * Settings.cellSize,
                 width: 3 * Settings.cellSize,
-                height: 6 * Settings.cellSize,
+                height: 5.5 * Settings.cellSize,
                 mapX: 290,
                 mapY: 216,
                 mapWidth: 36,
@@ -246,15 +246,139 @@ class Gui {
                 index: 0,
                 isDisplayed: false,
                 isActive: false,
+                shape: "rect",
                 x: 9 * Settings.cellSize,
                 y: 2 * Settings.cellSize,
                 width: 8 * Settings.cellSize,
                 height: 8 * Settings.cellSize,
-                mapX: 0,
-                mapY: 0,
-                mapWidth: 0,
-                mapHeight: 0,
+                radius: 0,
+                mapX: 1,
+                mapY: 1,
+                mapWidth: 100,
+                mapHeight: 100,
+                map: [
+                    {
+                        name: "startBtn",
+                        index: 0,
+                        shape: "roundrect",
+                        radius: Settings.cellSize / 2,
+                        x: 2 * Settings.cellSize,
+                        y: 2.5 * Settings.cellSize,
+                        width: 4 * Settings.cellSize,
+                        height: Settings.cellSize,
+                    },
+                    {
+                        name: "settingsBtn",
+                        index: 1,
+                        shape: "circle",
+                        radius: 0,
+                        x: 2 * Settings.cellSize,
+                        y: 5 * Settings.cellSize,
+                        width: 4 * Settings.cellSize,
+                        height: Settings.cellSize,
+                    },
+                    {
+                        name: "exitBtn",
+                        index: 2,
+                        shape: "rect",
+                        radius: 0,
+                        x: 2 * Settings.cellSize,
+                        y: 4.5 * Settings.cellSize,
+                        width: 4 * Settings.cellSize,
+                        height: Settings.cellSize,
+                    }
+                ]
             },
+            {
+                name: "end game",
+                index: 1,
+                isDisplayed: false,
+                isActive: false,
+                shape: "rect",
+                radius: 0,
+                x: 9 * Settings.cellSize,
+                y: 5 * Settings.cellSize,
+                width: 8 * Settings.cellSize,
+                height: 8 * Settings.cellSize,
+                mapX: 1,
+                mapY: 2,
+                mapWidth: 120,
+                mapHeight: 50,
+            },
+        ]
+
+        this.digitList = [
+            {
+                digit:0,
+                mapX: 583,
+                mapY: 10,
+                mapWidth: 15,
+                mapHeight: 24,
+            },
+            {
+                digit:1,
+                mapX: 603,
+                mapY: 11,
+                mapWidth: 11,
+                mapHeight: 22,
+            },
+            {
+                digit:2,
+                mapX: 619,
+                mapY: 10,
+                mapWidth: 14,
+                mapHeight: 23,
+            },
+            {
+                digit:3,
+                mapX: 637,
+                mapY: 10,
+                mapWidth: 15,
+                mapHeight: 24,
+            },
+            {
+                digit:4,
+                mapX: 655,
+                mapY: 10,
+                mapWidth: 15,
+                mapHeight: 24,
+            },
+            {
+                digit:5,
+                mapX: 674,
+                mapY: 11,
+                mapWidth: 14,
+                mapHeight: 23,
+            },
+            {
+                digit:6,
+                mapX: 691,
+                mapY: 10,
+                mapWidth: 15,
+                mapHeight: 24,
+            },
+            {
+                digit:7,
+                mapX: 583,
+                mapY: 43,
+                mapWidth: 16,
+                mapHeight: 23,
+            },
+            {
+                digit:8,
+                mapX: 601,
+                mapY: 42,
+                mapWidth: 15,
+                mapHeight: 24,
+            },
+            {
+                digit:9,
+                mapX: 618,
+                mapY: 43,
+                mapWidth: 16,
+                mapHeight: 23,
+            },
+
         ]
 
         this.backgroundSheet = new Image();
@@ -285,11 +409,10 @@ class Gui {
     static setBackground(id) {
         let ctx = this.getContext("backgroundLayer");
         let area = this.backgroundList[id];
-        console.log(area)
         if (this.backgroundSheet.complete) {
             ctx.drawImage(
                 this.backgroundSheet,
-                area.mapX, area.mapY, area.mapWidth, area.mapHeight,
+                //area.mapX, area.mapY, area.mapWidth, area.mapHeight,
                 area.x, area.y, area.width, area.height
             );
         } else {
@@ -329,25 +452,34 @@ class Gui {
             console.log("displayed" + this.guiList[ids[i]].name)
         }
     }
+    static clearGUI() {
+        let ctx = this.getContext("backgroundLayer");
+        ctx.clearRect(0, 0, Settings.screenWidth, Settings.screenHeight)
+        this.setBackground(Settings.bgn);
+    }
 
-    static displayInterface(ids) {
+    static displayInterface(ids, data) {
         for (let i = 0; i < ids.length; i++) {
             let ctx = this.getContext("interactiveLayer");
             let area = this.interfacesList[ids[i]];
-            console.log(area)
             if (this.interfaceSheet.complete) {
                 ctx.drawImage(
                     this.interfaceSheet,
-                    area.mapX, area.mapY, area.mapWidth, area.mapHeight,
+                    //area.mapX, area.mapY, area.mapWidth, area.mapHeight,
                     area.x, area.y, area.width, area.height
                 );
             } else {
                 this.interfaceSheet.onload = () => {
                     ctx.drawImage(
                         this.interfaceSheet,
+                        //area.mapX, area.mapY, area.mapWidth, area.mapHeight,
                         area.x, area.y, area.width, area.height
                     );
                 };
+            }
+            //データを表示
+            if (data) {
+                console.log(data)
             }
             //ゲームスタートの画面を表示された処理
             this.interfacesList[ids[i]].isDisplayed = true;
@@ -356,15 +488,15 @@ class Gui {
     }
     static hideInterface(ids) {
         for (let i = 0; i < ids.length; i++) {
-        let ctx = this.getContext("interactiveLayer");
-        let area = this.interfacesList[ids[i]];
-        console.log(area)
-        ctx.clearRect(
-            area.x, area.y, area.width, area.height
-        );
-        //ゲームスタートの画面を表示された処理
-        this.interfacesList[ids[i]].isDisplayed = false;
-        this.interfacesList[ids[i]].isActive = false;
+            let ctx = this.getContext("interactiveLayer");
+            let area = this.interfacesList[ids[i]];
+            console.log(area)
+            ctx.clearRect(
+                area.x, area.y, area.width, area.height
+            );
+            //ゲームスタートの画面を表示された処理
+            this.interfacesList[ids[i]].isDisplayed = false;
+            this.interfacesList[ids[i]].isActive = false;
         }
     }
 
@@ -432,22 +564,74 @@ class Gui {
     //GUIの中で行われたか
     static isGuiElement(x, y) {
         this.interfacesList.forEach(element => {
-            if (x > element.x &&
-                x < element.x + element.width &&
-                y < element.y + element.height &&
-                y > element.y &&
+            if (this.checkArea(x, y, element.shape, element.x, element.y, element.width, element.height, element.radius) &&
                 element.isActive) {
-                console.log("clicked on " + element.name);
+
                 switch (element.index) {
                     case 0:
-                        setGameStatus(1);
-                        this.hideInterface([0]);
-                        return true
+                        return this.clickOnMenu(x, y);
+
+                    case 1:
+                        return this.clickOnResult(x, y);
+
                 }
             }
         })
         return false;
+    }
+
+    static clickOnMenu(x, y) {
+        console.log("clicked on menu");
+        let startX = this.interfacesList[0].x
+        let startY = this.interfacesList[0].y
+        this.interfacesList[0].map.forEach(area => {
+            if (this.checkArea(x, y, area.shape, startX + area.x, startY + area.y, area.width, area.height, area.radius)) {
+                console.log("clicked on" + area.name)
+                switch (area.index) {
+                    case 0:
+                        setGameStatus(1);
+                        this.hideInterface([0]);
+                        return true;
+                    case 1:
+                    case 2:
+                }
+            }
+        })
 
     }
+
+    static clickOnResult(x, y) {
+
+        console.log("clicked on result");
+        this.hideInterface([1]);
+        //ゲーム情報を削除
+        this.clearGUI();
+        RenderEngine.renderClear();
+        this.displayInterface([0]);
+        return true;
+    }
+
+    static checkArea(posX, posY, shape, x, y, width, height, radius) {
+        switch (shape) {
+            case "rect":
+                //四角をチェック
+                if (posX > x &&
+                    posX < x + width &&
+                    posY < y + height &&
+                    posY > y) {
+                    return true;
+                }
+
+                break;
+            case "circle":
+                break;
+
+            case "roundrect":
+                return this.checkArea(posX, posY, "rect", x, y, width, height, radius)
+                break
+        }
+        return false;
+    }
+
 
 }

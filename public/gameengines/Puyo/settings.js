@@ -10,7 +10,7 @@ class Settings{
         this.screenWidth=27*this.cellSize;
         this.screenHeight=16*this.cellSize;;
         this.maxType=6;　//プヨの種類
-        this.movementSpeed=5;
+        this.movementSpeed=10;
         this.maxSize=2;
         this.puyoType=["","red", "pink", "green", "orange", "white", "purple"]
         this.hintStyle='black'
@@ -37,7 +37,7 @@ class Settings{
         if (this.mode<2) {
             return [2, 5, 8, 11, 14];
         }else {
-            return [0,1,3,4, 6,7,9,10, 12,13];
+            return [0,1,3,4,6,7,9,10,12, 13    ];
         }
     }
 

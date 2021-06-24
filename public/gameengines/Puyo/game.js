@@ -105,6 +105,7 @@ function loop() {
                             if (Board.objCount[i] === 0 && combinationCount[i] > 0) {
                                 // 全消しの処理をする
                                 Score.addScore(3600, i);
+                                phase[i]=4;
                             }
                             combinationCount[i] = 0;
                             phase[i] = 10;
@@ -185,12 +186,13 @@ function loop() {
                         //ゲームを終了
                         console.log("stage " + i + " display result");
                         RenderEngine.renderResult(frame, i); //結果アニメーションを表示
-                        gameStatus = 4;
+                        setGameStatus(0)
                         break;
                 }
             }
             break;
-        case 3:
+        default:
+            console.log("?????");
     }
     frame++;
     requestAnimationFrame(loop); // 1/60秒後にもう一度呼び出す

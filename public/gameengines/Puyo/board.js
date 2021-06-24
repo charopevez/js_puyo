@@ -1,9 +1,6 @@
 class Board {
     static initialize() {
-        //RenderEngine.renderGameField();
-        //RenderEngine.renderHint();
         Gui.setGUI(Settings.getGui());
-
 
         //メモリを準備する 
         this.board = [

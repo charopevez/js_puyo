@@ -25,15 +25,9 @@ class RenderEngine {
 
     }
 
-    static renderScore(score) {
-        for (var i = 0; i < score.length; i++) {
-            // render score value
-            ctx = this.getContext();
-            ctx.fillStyle = Settings.fontColor;
-            ctx.font = "normal " + 36 * this.ratio + "px Verdana";
-            ctx.fillText(score[i], obj[0] + Settings.cellSize, obj[1] + Settings.cellSize);
-        };
-
+    static renderScore(score, area) {
+        console.log("render score " + score);
+        this.renderNumber(score, area);
     }
 
     static renderHint(player) {
@@ -187,6 +181,10 @@ class RenderEngine {
         }
     }
 
+    static renderClear(){
+        let ctx=this.getContext();
+        ctx.clearRect(0,0, Settings.screenWidth, Settings.screenHeight)
+    }
 
     /**
      * @param gField ゲームステージ番号
@@ -203,7 +201,7 @@ class RenderEngine {
         }
         const elapsedFrame = frame - Board.eraseStartingFrame;
         const ratio = elapsedFrame / 60;
-        var startXY = Gui.guiList[gField+3];;
+        var startXY = Gui.guiList[gField+3];
         if (ratio <= 1) {
             for (const data of Board.getErasingData(gField)) {
                 let ctx = this.getContext();
@@ -241,22 +239,55 @@ class RenderEngine {
     */
 
     static renderResult( currentFrame, gField) {
-        var startXY = Settings.fieldPlace;
-        //背景再表示
-        this.renderGameField(gField);
         //ゲーム結果を表示
-        let ctx = this.getContext();
-        ctx.fillStyle = "black";
-        ctx.fillRect(startXY[gField][0] + Settings.cellSize,
-            startXY[gField][1] + Settings.cellSize,
-            Settings.cellSize*4,
-            Settings.cellSize*4);
-        //スコアを表示
-        ctx = this.getContext();
-        ctx.fillStyle = "white";
-        ctx.font = "normal " + 36 * this.ratio + "px Verdana";
-        ctx.fillText("your score"+ Score.score[gField], startXY[gField][0] + Settings.cellSize, startXY[gField][0] + Settings.cellSize);
-        return true;
+        Gui.displayInterface(
+            [1], {
+            text : Score.score[gField],
+        });
+        if (Gui.interfacesList[1].isActive) {
+            return false;
+        } else {
+            return true;
+        }
+        
+    }
+
+    static renderNumber(number, area){
+        //表示されている情報を削除う
+        console.log(area)
+        this.eraseArea(area);
+        let ctx=this.getContext();
+        let shift=0;
+        console.log("number " + number)
+        if (number==0) {
+            console.log("render 0")
+            console.log(Gui.guiSheet)
+            console.log(Gui.digitList[0].x+" "+Gui.digitList[0].y+" "+Gui.digitList[0].width+" "+Gui.digitList[0].height)
+            console.log(area.x+area.width-(shift+1)* Settings.cellSize+" "+area.y+" "+Settings.cellSize+" "+Settings.cellSize)
+            ctx.drawImage(
+                Gui.guiSheet, 
+                Gui.digitList[0].mapX, Gui.digitList[0].mapY, Gui.digitList[0].mapWidth ,Gui.digitList[0].mapHeight,
+                area.x+area.width-(shift+1)* Settings.cellSize, area.y, Settings.cellSize, Settings.cellSize
+                )
+        }
+        while (number>0){
+            //最後の桁数
+            let rem=number%10;
+            console.log("render "+ rem)
+            ctx.drawImage(
+                Gui.guiSheet, 
+                Gui.digitList[rem].mapX, Gui.digitList[rem].mapY, Gui.digitList[rem].mapWidth ,Gui.digitList[rem].mapHeight,
+                area.x+area.width-(shift+1)* Settings.cellSize, area.y, Settings.cellSize, Settings.cellSize
+                )
+            shift++;
+            number=(number-rem)/10;
+            
+        }
+    }
+
+    static eraseArea(area){
+        let ctx=this.getContext();
+        ctx.clearRect(area.x, area.y, area.width, area.height);
     }
 
     //#endregion

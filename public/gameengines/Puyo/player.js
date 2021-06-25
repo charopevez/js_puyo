@@ -88,8 +88,6 @@ class Player {
             drow: -1,
             orientation: 90
         };
-        // 接地時間はゼロ
-        this.groundRow = Settings.rows; //12
         // ぷよを描画
         RenderEngine.renderObj(this.player);
         return true;
@@ -150,11 +148,8 @@ class Player {
         } else if (this.keyStatus.rotate) {
             // 回転を確認する
             // 回せるかどうかは後で確認。まわすぞ
-            const step = (this.keyStatus.right) ? 1 : -1;
             const centerX = this.objStatus.column;
             const centerY = this.objStatus.row;
-            const rotateX = centerX + this.objStatus.dcol;
-            const rotateY = centerY + this.objStatus.drow;
             const rotation = this.objStatus.orientation;
             let canRotate = true;
             let stepX = 0;　//周り為真ん中のオブジェクト移動
@@ -239,7 +234,7 @@ class Player {
             || (y + dy + 1 >= 0 && (y + dy + 1 >= Settings.rows || Board.board[this.player][y + dy + 1][x + dx]))) //オブジェクトは下方向
         {
             isBlocked = true;
-            if (2 * curentFrame % Settings.freeFallSpeed == 0) {
+            if ( curentFrame % (Settings.freeFallSpeed/2) == 0) {
 
                 return true;
             }
@@ -271,19 +266,15 @@ class Player {
         let y = this.objStatus.row;
         let dx = this.objStatus.dcol;
         let dy = this.objStatus.drow;
-        console.log("falling object")
-        console.log(this.objStatus)
         if (y >= 0) {
             // 画面外の真ん中オブジェクトは消してしまう
             Board.fixObj(x, y, this.currentObj.objCenter, this.player);
-            Board.objCount[0]++;
-            console.log("fix center")
+            Board.objCount[this.player]++;
         }
         if (y + dy >= 0) {
             // 画面外の回れるオブジェクトは消してしまう
             Board.fixObj(x + dx, y + dy, this.currentObj.objRotatable, this.player);
-            Board.objCount[0]++;
-            console.log("fix rotate")
+            Board.objCount[this.player]++;
         }
         //clear falling object list
         RenderEngine.fix(this.player)

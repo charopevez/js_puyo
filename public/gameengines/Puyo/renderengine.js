@@ -26,7 +26,6 @@ class RenderEngine {
     }
 
     static renderScore(score, area) {
-        console.log("render score " + score);
         this.renderNumber(score, area);
     }
 
@@ -39,11 +38,11 @@ class RenderEngine {
                 hField =0;
                 break;
             case 1:
-                this.hint = Player.nextObjList;
+                this.hint = Bot.nextObjList;
                 hField = 1;  
                 break;
             case 3:
-                this.hint = Player.nextObjList;
+                this.hint = Human.nextObjList;
                 hField = 1;
                 break;
         }
@@ -133,11 +132,12 @@ class RenderEngine {
                 obj = Bot.objStatus;
                 field = 1;
                 break;
-            case 3:
+            case 2:
                 obj = Human.objStatus;
                 field = 1;
                 break;
         }
+        
         let startXY = Gui.guiList[field+3];
         //clear prev obj
         for (let y = field*Settings.maxSize; y < Settings.maxSize+field*Settings.maxSize; y++) {
@@ -196,7 +196,7 @@ class RenderEngine {
         //render existing/
         //render animation
         //全消し状態なら何もしない
-        if (Board.objCount[gField]==0) {
+        if (Score.score[gField]==0) {
             return true;
         }
         const elapsedFrame = frame - Board.eraseStartingFrame;
@@ -254,30 +254,23 @@ class RenderEngine {
 
     static renderNumber(number, area){
         //表示されている情報を削除う
-        console.log(area)
         this.eraseArea(area);
         let ctx=this.getContext();
         let shift=0;
-        console.log("number " + number)
         if (number==0) {
-            console.log("render 0")
-            console.log(Gui.guiSheet)
-            console.log(Gui.digitList[0].x+" "+Gui.digitList[0].y+" "+Gui.digitList[0].width+" "+Gui.digitList[0].height)
-            console.log(area.x+area.width-(shift+1)* Settings.cellSize+" "+area.y+" "+Settings.cellSize+" "+Settings.cellSize)
             ctx.drawImage(
                 Gui.guiSheet, 
                 Gui.digitList[0].mapX, Gui.digitList[0].mapY, Gui.digitList[0].mapWidth ,Gui.digitList[0].mapHeight,
-                area.x+area.width-(shift+1)* Settings.cellSize, area.y, Settings.cellSize, Settings.cellSize
+                area.x+area.width-(shift+1)* Settings.fontSize, area.y, Settings.fontSize, Settings.cellSize
                 )
         }
         while (number>0){
             //最後の桁数
             let rem=number%10;
-            console.log("render "+ rem)
             ctx.drawImage(
                 Gui.guiSheet, 
                 Gui.digitList[rem].mapX, Gui.digitList[rem].mapY, Gui.digitList[rem].mapWidth ,Gui.digitList[rem].mapHeight,
-                area.x+area.width-(shift+1)* Settings.cellSize, area.y, Settings.cellSize, Settings.cellSize
+                area.x+area.width-(shift+1)* Settings.fontSize, area.y, Settings.fontSize, Settings.cellSize
                 )
             shift++;
             number=(number-rem)/10;

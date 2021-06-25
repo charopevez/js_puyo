@@ -9,8 +9,7 @@ window.addEventListener("load", () => {
 let phase; // ゲームの現在の状況
 let frame; // ゲームの現在フレーム（1/60秒ごとに1追加される）
 let combinationCount = [0, 0];
-let gameStatus
-
+let gameStatus;
 
 function initialize() {
 
@@ -19,6 +18,7 @@ function initialize() {
     //guiを準備する
     Gui.initialize();
     gameStatus=0;
+    this.isErased=new Array(2);
 }
 
 function setGameStatus(id) {
@@ -38,7 +38,7 @@ function loop() {
             //オブジェクトファクトリーの準備をする
             Puyo.initialize();
             // ユーザー操作の準備をする
-            Player.initialize();
+            Player.initialize();    
             //相手操作の準備をする
             Settings.mode < 3 ? Bot.initialize() : Human.initialize();
             //CGI操作の準備をする
@@ -63,7 +63,6 @@ function loop() {
                     case 0:
                         //ゲームスタート
                         console.log("stage " + i + " start");
-
                         phase[i] = 1; //プヨの転落に進む
                         break;
 
@@ -81,6 +80,7 @@ function loop() {
                         }
                         break;
                     case 2:
+                        console.log("stage " + i + " obj fell");
                         //プヨ移動して、転落したまで状態
                         if (Board.isObjFell(i)) {
                             // すべて落ちきったら、ぷよを消せるかどうか判定する
@@ -89,23 +89,28 @@ function loop() {
                         break;
                     case 3:
                         // 消せるかどうか判定する
-                        const isErased = Board.isObjErased(frame, i);
-                        if (isErased) {
+                        this.isErased[i] = Board.isObjErased(frame, i);
+                        console.log("obj erased "+i)
+                        console.log(isErased[i])
+                        if (isErased[i]!=null) {
                             //消せたの場合
                             phase[i] = 4;
                             combinationCount[i]++;
                             console.log("score");
-                            console.log(isErased);
+                            console.log(isErased[i]);
                             console.log(combinationCount[i]);
                             // 得点を計算する
-                            Score.calculateScore(i, combinationCount[i], isErased.piece, isErased.obj);
+                            Score.calculateScore(i, combinationCount[i], isErased[i].piece, isErased[i].obj);
 
                         } else {
                             /// 消せなかったら、新しいぷよを登場させる
                             if (Board.objCount[i] === 0 && combinationCount[i] > 0) {
                                 // 全消しの処理をする
                                 Score.addScore(3600, i);
+                                console.log("all erased")
                                 phase[i]=4;
+                                combinationCount[i] = 0;
+                                break;
                             }
                             combinationCount[i] = 0;
                             phase[i] = 10;
@@ -139,7 +144,7 @@ function loop() {
                             phase[i] = 20;
                         } else {
                             // 次のプヨを作成出来なかったら、ゲームオーバー(第九状態に進む)
-                            //phase[1-i]=9; //相手のゲームを終わらせる
+                            phase[1-i]=9; //相手のゲームを終わらせる
                             phase[i] = 9;
                         }
                         break;

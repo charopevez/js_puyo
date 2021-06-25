@@ -8,7 +8,6 @@ class Score {
     // スコアを表示
     static showScore() {
         let score = this.score;
-        console.log("show score")
         RenderEngine.renderScore(score[0], Gui.guiList[12]);
         RenderEngine.renderScore(score[1], Gui.guiList[13]);
 
@@ -21,7 +20,7 @@ class Score {
         obj = Math.min(obj, Score.objBonus.length - 1);
         console.log ("bonus"+combination+" "+piece+" "+obj )
         let bonus = Score.combinationBonus[combination] + Score.sizeBonus[piece] + Score.objBonus[obj];
-        bonus=bonus? bonus:1;
+        bonus=bonus==0? bonus:1;
         this.addScore(bonus * piece * 10, player);
     }
 

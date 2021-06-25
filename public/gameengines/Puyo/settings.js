@@ -18,6 +18,7 @@ class Settings{
         this.scoreStyle='yellow'
         this.fontColor= 'black';
         this.bgn=0;
+        this.fontSize=this.cellSize*3/5;
         
     }
 
@@ -39,6 +40,10 @@ class Settings{
         }else {
             return [0,1,3,4,6,7,9,10,12, 13    ];
         }
+    }
+
+    static increaseFreeFallSpeed(){
+        this.freeFallSpeed-=10;
     }
 
 }

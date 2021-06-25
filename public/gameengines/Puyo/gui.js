@@ -449,7 +449,6 @@ class Gui {
             }
             //ゲームスタートの画面を表示された処理
             this.guiList[ids[i]].isDisplayed = true;
-            console.log("displayed" + this.guiList[ids[i]].name)
         }
     }
     static clearGUI() {
@@ -490,7 +489,6 @@ class Gui {
         for (let i = 0; i < ids.length; i++) {
             let ctx = this.getContext("interactiveLayer");
             let area = this.interfacesList[ids[i]];
-            console.log(area)
             ctx.clearRect(
                 area.x, area.y, area.width, area.height
             );
@@ -581,7 +579,6 @@ class Gui {
     }
 
     static clickOnMenu(x, y) {
-        console.log("clicked on menu");
         let startX = this.interfacesList[0].x
         let startY = this.interfacesList[0].y
         this.interfacesList[0].map.forEach(area => {

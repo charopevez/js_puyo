@@ -38,11 +38,8 @@ class Board {
     //次ぷよを作成し
     static nextPuyo(gField) {
         if (gField < 1) {
-            console.log("player")
             return Player.nextObj();
         } else {
-            console.log("opponent")
-            return true;
             return Settings.mode < 3 ? Bot.nextObj() : Human.nextObj();
         }
 
@@ -127,8 +124,10 @@ class Board {
         if (this.objCount[gField]==0) return null;
         //変数を宣言と初期化
         this.eraseStartingFrame = startingFrame;
+        console.log("obj erased")
         this.clearErasingObjData(gField)
-
+        console.log(this.erasingObjData0)
+        console.log(this.erasingObjData1)
         // 何色のぷよを消したかを記録する
         const erasingObj = {};
         // 隣接ぷよを確認する関数内関数を作成
@@ -204,18 +203,18 @@ class Board {
         for (const info of existingObjData) {
             this.board[gField][info.y][info.i] = info.object;
         }
-        if (this.erasingObjData0.length) {
+        if (this.erasingObjData0.length&&gField==0) {
             // もし消せるならば、消えるぷよの個数と色の情報をまとめて返す
             return {
                 piece: this.erasingObjData0.length,
                 obj: Object.keys(erasingObj).length
             };
         }
-        if (this.erasingObjData1.length) {
+        if (this.erasingObjData1.length&&gField==1) {
             // もし消せるならば、消えるぷよの個数と色の情報をまとめて返す
             return {
                 piece: this.erasingObjData1.length,
-                color: Object.keys(erasingObj).length
+                obj: Object.keys(erasingObj).length
             };
         }
         return null;
@@ -238,7 +237,6 @@ class Board {
         if (gField < 1) {
             return Player.actionOnField(cFrame);
         } else {
-            return true;
             return Settings.mode < 3 ? Bot.actionOnField(cFrame) : Human.actionOnField(cFrame);
         }
     }
@@ -277,7 +275,6 @@ class Board {
         if (gField < 1) {
             return Player.fix(cFrame, 0);
         } else {
-            return true;
             return Settings.mode < 3 ? Bot.fix(cFrame, 1) : Human.fix(cFrame, 1);
         }
     }
